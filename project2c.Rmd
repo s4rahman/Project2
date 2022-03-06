@@ -1,0 +1,263 @@
+---
+title: "Project 2C"
+output:
+  html_document:
+    always_allow_html: true
+    df_print: paged
+  pdf_document: default
+---
+
+
+
+# Project 2: Comparsion of Replicase Polyprotein 1a sequences of four different coronaviruses
+
+## Author: Samiha Rahman - BIMM 143 - Winter 2022
+
+# Introduction 
+
+Scientific Question: 
+What are the similarities and differences between the replicase polyprotein 1A sequence of severe acute respiratory syndrome coronavirus (SARS-CoV), severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2), bat-SL-CoVZC45 (BAT-CoV), and Middle East Respiratory Syndrome Coronvirus (MERS-CoV)? 
+
+SARS-CoV-2 is a highly infectious and pathogenic virus that has infected and killed almost 6 million people since December 2020 (WHO, 2022). This virus has brought upon a global pandemic, and yet, there is much that is still unknown about its interaction with host cells, infectivity, pathogenicity, and its evolution. SARS-CoV-2 is not the first coronavirus to infect humans. In 2003, SARS-CoV emerged and infected individuals in China and four other countries (WHO, 2022). In 2012, MERS-CoV killed 35% of all infected individuals (WHO, 2022). However, these viruses were not as deadly as SARS-CoV-2. Therefore, there could be something with its genome that is inherently different from SARS-CoV-2 that allows SARS-CoV-2 to be more infectious, pathogenic, and persistent in our ecosystem. One possible structure to consider is replicase polyprotein 1a. 
+
+Replicase Polyprotein 1a is a key polyprotein in a virus involved in the transcription and replication of viral RNA in host cells (Naqvi, 2020). Coronaviruses translate their first open reading frames ORF1a and ORF1b into polyproteins (Gadlage, 2010). These polyproteins are then cleaved by viral proteases into nonstructural proteins (Gadlage, 2010). These NSPs are essential to the survival of a virus. The first nonstructural protein (NSP1) processed is host translation inhibitor and it suppresses the host cell from initiating its own translation (Schubert, 2020). The question now is to see what the similarities and differences are between replicase polyprotein 1a in SARS-CoV-2 and other coronaviruses in attempt to understand if there something unique in the sequence that allows for its pathogenicity and infectivity. 
+
+Hypothesis: If there are unique insertions or gap sequences in the SARS-CoV-2 replicate polyprotein 1a sequence compared to SARS-CoV, MERS, and BAT-CoV replicase polyprotein 1a sequences, then these insertions may explain the increased infectivity and pathogenicity of the SARS-CoV-2 on host cell targets.
+
+Here we perform multiple sequence alignment, pairwise sequence alignment and used a heatmap to visualize the similarities in thee sequences. A multiple sequence alignment is done to compare the sequences of the replicase polyprotein 1a in SARS-CoV-2 (Uniprot ID: P0DTC1), SARS-CoV (UniProt ID: P0C6U8), BtCoV/279/2005 (Uniprot ID: P0C6F5), and MERS-CoV (Uniprot ID:K9N638).
+
+A homology modeling using SWISS Modeling program was used to see the similarities between the replicase polyprotein 1a of SARS-CoV-2 and 3 other coronaviruses: SARS-CoV (Uniprot ID: P0C6U8), BtCoV/279/2005 (UniProt ID: P0C6F5), and MERS-CoV (UniProt ID:K9N638) respectively. The sequences were collected from UniProt, and the results provided 3D measurements and graphic of homology model.
+
+The heatmap and the 3D protein measurements were used to answer the scientific question about the similarities between the replicase polyprotein 1a sequences. 
+
+# Package Descriptions
+
+The following are codes necessary to download the packages necessary to conduct this bioinformatics analysis. A summary of the packages and why they are necessary are provided below. 
+
+Packages being used to conduct Multiple Sequence Alignment 
+
+1.	BioConductor is a package in R Studio that contains functions that allow for statistical analysis of genomic data.
+
+2.	Biostrings is a BioConductor-specific package that contains string matching alignment and reading algorithms on biological sequences. 
+
+3.	seqinr is a package in R Studio that retrieves and analyzes biological sequences and creates data visualization. 
+
+4.	msa is an R studio package that conducts a multiple sequence alignment for biological sequences. 
+Note: a TeX Shade package needed to be downloaded from a web browser to conduct the coloring of the multiple sequence alignment https://ctan.org/pkg/texshade?lang=en
+
+Packages being used to create heatmap 
+
+5.	gplots is an R studio package that can be used for plotting data.
+
+Packages being used to analyze the homology models 
+
+6.	bio3d is an R package that is used to analyze protein structures. It can read and analyze biological molecules, perform alignments, and different analysis functions. This package is necessary to read the pdb files of the homology structures. 
+
+7.	NGLVieweR is a GitHub package that can be used to interactively visualize and interact with proteins from the Protein Data Bank (PDB). Other packages that need to be downloaded to download this packages are: “remotes” which is an R package that used to download packages stored in GitHub and “magrittr” is a supplementary package in R that makes a code more readable by minimizing the need for local variables. 
+
+8.	rjson is an R package that reads JSON files. These files contain quantitative data from the homology models. 
+
+```{r}
+#install.packages("BiocManager")
+library(BiocManager)
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+
+#BiocManager::install("Biostrings")
+library(Biostrings)
+#install.packages("seqinr")
+library(seqinr)
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("msa")
+library(msa)
+#install.packages("gplots")
+library(gplots)
+#install.packages("bio3d")
+library(bio3d)
+#install.packages("remotes")
+#remotes::install_github("nvelden/NGLVieweR")
+#install.packages("magrittr")
+library(NGLVieweR)
+#install.packages("rjson")
+library(rjson)
+```
+
+# Performing Bioinformatics Analysis
+## Loading Data from UniProt
+
+The following code loads the fasta file of the replicase polyprotein 1a sequence of SARS-CoV-2, SARS-CoV, MERS-CoV, and BtCoV/279/2005. The sequences were gathered from UniProt. These files will be used to conduct the multiple sequence alignment and heatmap analysis for this bioinformatics analysis.
+```{r}
+# These are global variables that set up the rest of the script
+# replicase_unaligned is an AAStringSet variable or an S4 variable (global)
+replicase_unaligned <- readAAStringSet("replicase_seq.fasta")
+
+# replicase_read is a list variable (global)
+replicase_read <- read.fasta(file = "replicase_seq.fasta")
+
+# typeof function shows the datatype the variable  
+typeof(replicase_unaligned)
+typeof(replicase_read)
+
+# length function can be used the number of sequences that are in the variable  
+length(replicase_unaligned)
+length(replicase_read)
+```
+
+# Bioinformatics Method 1: Multiple Sequence Alignment of Replicase polyprotein 1a 
+
+The first bioinformatics method used in this analysis is multiple sequence alignment of four sequences of the replicase polyprotein 1a of four coronaviruses. The function aligns all the sequences against each other and lines up the matches. The UniProt ID for each sequence is listed beside the amino acid string.
+```{r}
+#The following code is creating and printing a complete multiple sequence alignment using sequences in the global variable. 
+
+replicase_MSA <- msa(replicase_unaligned)
+print(replicase_MSA, show="complete")
+
+#The following code colors the alignment matches in the sequence and prints them out as a PDF file in the working directory. It is a function in the msa package. 
+
+system.file("tex", "texshade.sty", package="msa")
+msaPrettyPrint(replicase_MSA, y=c(1, 4610),
+               subset=c(1:4), showNames="none", showLogo="none",
+               consensusColor="ColdHot", showLegend=FALSE,
+               askForOverwrite=FALSE)
+
+```
+
+# Data Analysis 1: Heatmap 
+
+A heatmap was created to visually represent the sequence similarities and differences of the replicase polyprotein 1a sequences between the different coronaviruses. The heatmap is a great way to visualize the results of the multiple sequence alignment because it color-codes if there is a overall similarity or differences in the sequences. 
+```{r}
+# A vector datatype interger needs to be created to loop through each sequence of the global variable. This creates a matrix needed for the heatmap.  
+x <- 1:length(replicase_unaligned)
+```
+
+The following code is building the heatmap matrix that is used for the sequences in global variables. The first function creates a nested for loop to compare the replicase polyprotein 1a sequence of one coronavirus to the another. The function will loop through all the sequences until all four sequences have aligned to each other. 
+```{r}
+heatmapmatrix2 <- function(s4, seq_length) {
+# the matrix is being structured 
+  heatmap <- matrix(nrow=length(x), ncol=length(x))
+ # The function creates a nested for loop
+  for (i in seq_length) {
+    for (j in seq_length){
+      # here, the variables are being defined. these are for each sequence in the alignment since one sequence will be compared to another sequence. 
+      string1 <- s4[i]
+      string2 <- s4[j]
+    
+      # string1 variable need to be turned into character string
+      dsl = AAStringSetList(string1)
+      as.character(unlist(dsl))
+      cl = as(dsl, "CharacterList")
+      as.list(cl)
+      
+      # string2 variable need to be turned into character string
+      dsl2 = AAStringSetList(string2)
+      as.character(unlist(dsl2))
+      cl2 = as(dsl2, "CharacterList")
+      as.list(cl2)
+    
+      # here a pairwise sequence alignment for the two strings occurs
+      pairalign <- pairwiseAlignment(pattern = c(cl2), subject = cl)
+    
+      # this function assign a score from the pairwise sequence alignment to the matrix
+      heatmap[i,j] <- score(pairalign)
+    }
+  }
+  return(heatmap)
+}
+
+```
+
+This following code is aligning the replicase polyprotein 1a sequences with the vector created for looping through the sequences. The result will print a matrix with the similarity scores. 
+```{r}
+
+seq_matrix_align <-heatmapmatrix2(replicase_unaligned, x)
+seq_matrix_align
+```
+
+This following code produces a color visual representation of the heatmap matrix created in the previous code. 
+seq1 is SARS-CoV
+seq2 is Bat-CoV
+seq3 is SARS-CoV-2
+seq4 is MERS-CoV
+```{r}
+heatmap.2(seq_matrix_align) 
+```
+
+# Bioinformatic Method 2: Homology Modelling 
+
+The second bioinformatics method used in this analysis is homology modeling comparing replicase polyprotein 1a sequences of SARS-CoV-2 with the replicase polyprotein 1a sequence of the other corornaviruses. This modeling is completed through the SWISS MODEL program that takes the UniProt ID if two or more sequences and creates a 3D interactive model where the sequences are compared for their similarities and differences. The model can be downloaded from the SWISS MODELing program and read in R studio through a PDB file. The quantitative data can be read through a JSON file as it describes the sequence similarities and identities of the homology models. The four sequences of the replicase polyprotein 1a of four coronaviruses. The function aligns all the sequences against each other and lines up the matches. The UniProt ID for each sequence is listed beside the amino acid string.
+
+Homology Model of Replicase Polyprotein 1a of SARS-CoV-2 and SARS-CoV
+```{r}
+#This function reads the pdb file of Homology Model created from SWISS Modeling Program
+read.pdb(file = "SARS_SARS2.pdb")
+
+#This function views the views the pdb file of the homology model and creates an output with 3D viewing capabilities. 
+NGLVieweR("SARS_SARS2.pdb") %>% 
+ addRepresentation("cartoon", param = list(colorScheme = "residueindex")) 
+```
+
+Homology Model of Replicase Polyprotein 1a of SARS-CoV-2 and MERS-CoV
+```{r}
+read.pdb(file = "MERS_SARS.pdb")
+NGLVieweR("MERS_SARS.pdb") %>% 
+  addRepresentation("cartoon", param = list(colorScheme = "residueindex")) 
+```
+
+Homology Model of Replicase Polyprotein 1a of SARS-CoV-2 and BtCoV/279/2005 
+```{r}
+read.pdb(file = "bat_SARS2.pdb")
+
+NGLVieweR("bat_SARS2.pdb") %>% 
+  addRepresentation("cartoon", param = list(colorScheme = "residueindex"))
+```
+
+#Data Analysis 2: Quantitative Data of Homology Model (p-value)
+
+This data analysis method is observing the similarities between the replicase polyprotein 1a sequences. The homology model created from the SWISS MODEL program created a JSON file output that contains the quantitative data about the sequence similarities, identities, qsqe, etc. These values show if the homology model created is accurate and reliable and statistically significant. 
+
+Quaternary structure quality estimate (QSQE) is a score that reflects the expected accuracy of the interchain contact in the homology model. The score is from 0 to 1, and typically a score greater than 0.7 is considered a reliable model to follow. GMQE score estimates the accuracy of the tertiary structure of the homology model.
+```{r}
+#The following code reads the JSON file downloaded from the homology model from the SWISS MODEL program. The file is assigned a variable to allow for extraction of certain data from the file. 
+SARS_SARS2_json <-fromJSON(file = "SARS_SARS2.json")
+
+#The following code extracts the sequence identity from the JSON file
+SARS_SARS2_json$sequence_identity
+
+#The following code extracts the sequence similarity from the JSON file
+SARS_SARS2_json$sequence_similarity
+
+#The following code extracts the QSQE score from the JSON file
+SARS_SARS2_json$qsqe
+
+#The following code extracts the GMQE score from the JSON file
+SARS_SARS2_json$gmqe
+```
+
+
+```{r}
+MERS_SARS2_json <- fromJSON(file = "MERS_SARS2.json")
+MERS_SARS2_json$sequence_identity
+MERS_SARS2_json$sequence_similarity
+MERS_SARS2_json$qsqe
+MERS_SARS2_json$gmqe
+```
+
+
+```{r}
+bat_SARS2_json <- fromJSON(file = "bat_SARS2.json")
+bat_SARS2_json$sequence_identity
+bat_SARS2_json$sequence_similarity
+bat_SARS2_json$qsqe
+bat_SARS2_json$gmqe
+```
+
+# Analysis of the Result
+
+Sequence 1 belonged to SARS-CoV, Sequence 2 belonged to Bat-CoV, Sequence 3 belonged to SARS-CoV-2, and Sequence 4 belonged to MERS-CoV. Using the heatmap matrix along from the multiple sequence alignment, the replicase polyprotein 1a sequence of SARS-CoV-2 was most similar to the replicase polyprotein 1a sequence of SARS-CoV comapred to MERS-CoV and Bat-CoV. Furthermore, the Bat-CoV replicase sequence was the least similar to any of the other sequence in this analysis. However, the multiple sequence alignment did not note any noteable gaps or insertions in the seqeunces comparing the SARS-CoV and SARS-CoV-2 replicase polyprotein 1a, so there is no significant evidence to confirm or deny the scientfic hypothesis.
+
+Comparing the homology modeling created from the SWISS model program, the models comparing the SARS-CoV-2 and SARS-CoV replicase polyprotein 1a sequences and the SARS-CoV-2 and the bat-CoV replicase polyprotein 1a sequences were the most similar with sequence similarity scores of 0.59 and 0.60 respectively. This is suggesting that there are high similarities between the two sequences. In addition, SARS-CoV-2 and SARS-CoV model has a sequence identity of 98.05, and the SARS-CoV-2 and bat-CoV model has a sequence identity of 100. This mean that among the similarities how much the sequences matched identically. 
+
+However, it is important to note that QSQE scores for both models is lower than 0.7, which means that the models are not reliable and should not be used predictive calculations and conclusions. Therefore, homology models also did not provide conclusive evidence of any significant similarities or differences between the coronaviruses. 
+
+
