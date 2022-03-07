@@ -22,12 +22,16 @@ FASTA file with the 4 replicase polyprotein 1a sequences (Note: Sequences were d
 
 PDB files from the homology 
 2. MERS_SARS.pdb
+
 3. SARS_SARS2.pdb
+
 4. bat_SARS2.pdb 
 
 JSON files from the Homology Model 
 5. MERS_SARS2.json
+
 6. SARS_SARS2.json
+
 7. bat_SARS2.json
 
 
