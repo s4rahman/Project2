@@ -20,7 +20,8 @@ To complete this bioinformatics analysis the following files will be required:
 FASTA file with the 4 replicase polyprotein 1a sequences (Note: Sequences were downloaded from the UniProt database) 
 1. replicase_seq.fasta 
 
-PDB files from the homology 
+PDB files from the homology
+
 2. MERS_SARS.pdb
 
 3. SARS_SARS2.pdb
@@ -28,6 +29,7 @@ PDB files from the homology
 4. bat_SARS2.pdb 
 
 JSON files from the Homology Model 
+
 5. MERS_SARS2.json
 
 6. SARS_SARS2.json
